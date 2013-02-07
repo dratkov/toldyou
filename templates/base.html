@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Говорил вам</title>
+    <script src="{{ STATIC_URL }}js/jquery-1.9.0.js"></script>
+    <script src="{{ STATIC_URL }}js/short_common_function.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/bootstrap.css" />
+
+    <script src="{{ STATIC_URL }}js/jquery-ui.js"></script>
+    <script src="{{ STATIC_URL }}js/ui.datepicker-ru.js"></script>
+
+
+
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/ui-themes/themes/redmond/jquery-ui.css" />
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span3">
+            {% block left_column %}{% endblock %}
+        </div>
+        <div class="span9">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</div>
+<script src="{{ STATIC_URL }}js/bootstrap-button.js"></script>
+
+</body>
+</html>

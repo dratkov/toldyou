@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load general_tags %}
+{% block left_column %}left column{% endblock %}
+
+{% block content %}
+
+    <form id="form_edit_post" method="post" action="#">
+        <fieldset>
+            <h4>{{ post.text }}</h4>
+            <input type="hidden" value="{{ post.fulfilled }}" name="fulfilled"/>
+            <span class="label label-success" onclick="set_fulfilled(this)">сбылось <i
+                    class='icon-ok icon-white {% if not post.fulfilled %} hide{% endif %}'></i></span>
+            <input type="hidden" value="{{ post.not_fulfilled }}" name="not_fulfilled"/>
+            <span class="label label-important" onclick="set_not_fulfilled(this)">не сбылось <i
+                    class='icon-ok icon-white {% if not post.not_fulfilled %} hide{% endif %}'></i></span>
+            <br/>
+            <div class="btn-group" data-toggle="buttons-radio">
+                <button type="button" class="btn btn-primary {% if post.visible == 0 %} active{% endif %}" value="0">показать всем</button>
+                <button type="button" class="btn btn-primary {% if post.visible == 1 %} active{% endif %}" value="1">подписчикам</button>
+                <button type="button" class="btn btn-primary {% if post.visible == 2 %} active{% endif %}" value="2">только мне</button>
+            </div>
+            <input type="hidden" name="visible" value="{{ post.visible }}" />
+            <br/>
+            <span>
+                <select name="mood_id">
+                    <option>ваше настроение?</option>
+                    {% mood_list post.mood.id %}
+                </select>
+            </span>
+            <span>
+                <select name="category_id">
+                    <option value="">категории</option>
+                    {% for c in category %}
+                        <option value="{{ c.id }}" {% if post.category and c.id == post.category.id %} selected="selected"{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </span>
+            <br/>
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+
+        </fieldset>
+    </form>
+
+
+{% endblock %}

@@ -1,0 +1,16 @@
+<span class="post-short-comments-container">
+      {% for c in short_comments %}
+          <span style="display: inline-block; opacity: {{ c.opacity }}" class="label label-short-comment"
+                onclick="shortCommentsVote(this, '{% url ajax_add_short_comments_post %}', {{ post.id }}, {{ c.id }})">
+                {{ c.text }}
+                <span>
+                    {% for p_s in post_short_comments %}
+                        {% if post.id == p_s.post.id and c.id == p_s.short_comment.id %}
+                            {{ p_s.count }}
+                        {% endif %}
+                    {% endfor %}
+                </span>
+          </span>
+      {% endfor %}
+</span>
+                        

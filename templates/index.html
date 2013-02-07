@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% load general_tags %}
+
+{% block left_column %}left column{% endblock %}
+
+
+{% block content %}
+
+    {% if form.errors %}
+        {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+            <div class="alert alert-error">
+                <b>
+                {% if field == "event_date" %}
+                    Дата события
+                {% elif field == "text" %}
+                    Описание события
+                {% endif %}
+                </b>: {{ error }}
+            </div>
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+    <form method="POST" action="#" id="form-post-id">{% csrf_token %}
+        <div>
+            <textarea name="text"
+                      placeholder="Что по-вашему мнению произодет, но о чем никто точно не знает?"
+                      class="input-xxlarge" rows="2"
+                      onblur="if($(this).val().length == 0) { $(this).attr('rows', 2) }"
+                      onfocus="$(this).attr('rows', 5)"></textarea>
+        </div>
+        <div><span id="charset-count"></span></div>
+        <span>
+        <div class="btn-group" data-toggle="buttons-radio">
+            <button type="button" class="btn btn-primary active" value="0">показать всем</button>
+            <button type="button" class="btn btn-primary" value="1">подписчикам</button>
+            <button type="button" class="btn btn-primary" value="2">только мне</button>
+        </div>
+        <input type="hidden" name="visible" value="0"/>
+        </span>
+        <br/>
+        <span>
+        <select name="event_date_choise" onchange="if(this.value.length > 0) { $('#event_date_id').addClass('hide'); this.form.event_date.value = this.value }">
+            <option value="">когда произойдет?</option>
+            {% for d in event_date_arr %}
+                <option value="{{ d.value|date:"Y-m-d" }}">{{ d.key }}</option>
+            {% endfor %}
+            <option value="" onclick="$('#event_date_id').removeClass('hide');">календарь</option>
+        </select>
+
+        <span id="event_date_id" class="hide">Дата события:
+            <input type="text" id="datepicker" name="event_date" class="input-small" value="{{ now|date:"Y-m-d" }}"/></span>
+        </span>
+        <span>
+            <select name="category_id">
+                <option value="">категории</option>
+                {% for c in category %}
+                    <option value="{{ c.id }}">{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </span>
+        <span>
+            <select name="mood_id">
+                <option value="">ваше настроение?</option>
+                {% mood_list %}
+            </select>
+        </span>
+        <br/>
+        <button type="submit" class="btn btn-info">toldyou</button>
+    </form>
+
+    <script>
+        $(function () {
+            $.datepicker.setDefaults($.datepicker.regional[ "ru" ]);
+            $("#datepicker").datepicker({ minDate:0, changeMonth:true, changeYear:true }, $.datepicker.regional['ru']);
+        });
+    </script>
+
+    {% for post in posts %}
+        <div class="well">
+            <small class="post-date">{{ post.date|date:"d.m.Y" }}</small>
+            {% if post.event_date %}
+                <small class="post-date pull-right">{{ post.event_date|date:"d.m.Y" }}</small>
+            {% endif %}
+            {% if post.date and post.event_date %}
+                <div class="progress progress-{% percent_event_date post.date|date:"Y-m-d h:i:s" post.event_date|date:"Y-m-d h:i:s" 0 %}">
+                    <div class="bar"
+                         style="width: {% percent_event_date post.date|date:"Y-m-d h:i:s" post.event_date|date:"Y-m-d h:i:s" 1 %}%"></div>
+                </div>
+            {% endif %}
+            <p>
+                <a href="{% url post_edit post.id %}" title="редактировать"><i class="icon-pencil"></i></a>
+                {{ post.text }}
+            </p>
+            <span class="cursor-pointer" onclick="postAgree(this, {{ post.id }}, '{% url told.views.ajax_post_agree %}', true)">
+                <i class="icon-thumbs-up"></i>
+                <small>
+                    {% if post.agree_count > 0 %}
+                        {{ post.agree_count }}
+                    {% endif %}
+                </small>
+                <span class="label label-agree">Согласен</span>
+            </span>
+            <span class="cursor-pointer" onclick="postAgree(this, {{ post.id }}, '{% url told.views.ajax_post_agree %}', false)">
+                <i class="icon-thumbs-down"></i>
+                <small>
+                    {% if post.disagree_count > 0 %}
+                        {{ post.disagree_count }}
+                    {% endif %}
+                </small>
+                <span class="label label-not-agree">Не согласен</span>
+            </span>
+            <small class="pull-right">
+                <a href="#" class="text-info post-more-info" onclick="return postMore(this)"><abbr>подробнее</abbr> <i class="icon-chevron-down"></i></a>
+            </small>
+            <div class="hide">
+                <hr/>
+                <div>
+                    <div>
+                        {% post_short_comments post short_comments %}
+                        <br/>
+                        {% for u_c in post.get_user_short_comments %}
+                            <span style="display: inline-block"
+                                  class="label label-user-short-comment">{{ u_c.text }}</span>
+                        {% endfor %}
+                    </div>
+                    <input class="input-medium-low" maxlength="50" style="display: none"/>
+                    <span class="label"
+                          onclick="addShortPostComment(this, {{ post.id }},'{% url ajax_add_user_post_short_comment %}')">написать свой <i
+                            class='icon-comment icon-white'></i></span>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            $(document).ready(function(){
+                $(".icon-thumbs-up").hover(
+                        function(){ $(this).next().next().css('opacity', 1) },
+                        function(){ $(this).next().next().css('opacity', 0.1) })
+                $(".icon-thumbs-down").hover(
+                        function(){ $(this).next().next().css('opacity', 1) },
+                        function(){ $(this).next().next().css('opacity', 0.1) })
+
+                $(".label-agree").hover(
+                        function(){ $(this).css('opacity', 1) },
+                        function(){ $(this).css('opacity', 0.1) })
+                $(".label-not-agree").hover(
+                        function(){ $(this).css('opacity', 1) },
+                        function(){ $(this).css('opacity', 0.1) })
+
+            })
+        </script>
+
+    {% endfor %}
+
+{% endblock %}

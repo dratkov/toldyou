@@ -1,0 +1,3 @@
+{% for m in mood_list %}
+    <option value="{{ m.id }}" {% if mood_id > 0 and mood_id == m.id %} selected="selected"{% endif %}>{{ m.text }}</option>
+{% endfor %}
